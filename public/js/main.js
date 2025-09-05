@@ -14,20 +14,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientNameDisplay = document.getElementById('client-name-display');
     const barberNameDisplay = document.getElementById('barber-name-display');
     const queuePositionDisplay = document.getElementById('queue-position-display');
+    const barberPreviewDiv = document.getElementById('barber-preview'); // preview posição
 
     let currentClientId = null;
     let queueCheckInterval = null;
-
     const POLL_INTERVAL = 5000;     // 5s
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
-    // Seleção do barbeiro (UI)
+    // Seleção do barbeiro (UI) e preview de posição
     barberItems.forEach(item => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', async () => {
             barberItems.forEach(i => i.classList.remove('selected'));
             item.classList.add('selected');
-            selectedBarberInput.value = item.dataset.barber.toLowerCase();
+
+            const barberKey = item.dataset.barber.toLowerCase();
+            selectedBarberInput.value = barberKey;
             barbeiroErrorDiv.textContent = '';
+
+            // Mostrar preview da posição antes de entrar na fila
+            if (!barberPreviewDiv) return;
+            barberPreviewDiv.style.display = 'block';
+            barberPreviewDiv.innerHTML = `<div class="alert alert-info mt-2 animate-fade-in">
+                Carregando posição...
+            </div>`;
+
+            try {
+                const resp = await fetch(`${API_BASE_URL}/public/barber-queue/${barberKey}`);
+                if (!resp.ok) throw new Error('Erro ao buscar fila');
+                const data = await resp.json();
+                const qtd = data.queue?.length || 0;
+
+                barberPreviewDiv.innerHTML = `<div class="alert alert-info mt-2 animate-fade-in">
+                    Atualmente há <b>${qtd}</b> cliente(s) na fila do barbeiro <b>${barbers[barberKey]}</b>.<br>
+                    Se você entrar agora, será o número <b>${qtd + 1}</b>.
+                </div>`;
+            } catch (err) {
+                console.error('Erro preview fila:', err);
+                barberPreviewDiv.innerHTML = `<div class="alert alert-warning mt-2">
+                    Não foi possível verificar a posição agora. Tente novamente.
+                </div>`;
+            }
         });
     });
 
@@ -75,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             currentClientId = data.clientId;
 
-            // salva para persistir entre sessões
             localStorage.setItem('clientId', currentClientId);
             localStorage.setItem('clientName', nome);
             localStorage.setItem('barber', barbeiroId);
@@ -144,10 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const resp = await fetch(`${API_BASE_URL}/public/position?clientId=${currentClientId}`);
-            if (!resp.ok) {
-                console.warn('Erro no endpoint de posição');
-                return;
-            }
+            if (!resp.ok) return;
 
             const data = await resp.json();
             if (data && data.found) {
@@ -156,10 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 clientNameDisplay.textContent = data.name || localStorage.getItem('clientName') || '';
                 document.getElementById('queue-message').textContent = 'Você já está na fila. Por favor, aguarde seu atendimento.';
                 toggleSections(true);
-                return;
             } else {
-                // 🔥 removido imediatamente
-                console.log('Cliente não encontrado → removendo imediatamente');
                 clearClientSession();
                 stopQueueCheck();
                 toggleSections(false);
@@ -182,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Restaura sessão do localStorage caso exista
     function restoreClientSession() {
         const savedClientId = localStorage.getItem('clientId');
         const savedName = localStorage.getItem('clientName');
