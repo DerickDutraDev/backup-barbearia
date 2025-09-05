@@ -23,16 +23,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
     // Seleção do barbeiro (UI)
+    // Seleção do barbeiro (UI)
     barberItems.forEach(item => {
         item.addEventListener('click', async () => {
             barberItems.forEach(i => i.classList.remove('selected'));
             item.classList.add('selected');
             selectedBarberInput.value = item.dataset.barber.toLowerCase();
             barbeiroErrorDiv.textContent = '';
-
+    
             // Preview da posição
             const barberId = item.dataset.barber.toLowerCase();
-            barberPreviewDiv.textContent = 'Carregando posição...';
+            barberPreviewDiv.textContent = 'Carregando...';
+            barberPreviewDiv.style.color = '#D4AF37';
             try {
                 const resp = await fetch(`${API_BASE_URL}/public/barber-queue/${barberId}`);
                 if (!resp.ok) throw new Error('Erro ao buscar fila');
@@ -43,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // posição provável se o cliente entrasse agora
                     position = (data.queue?.length || 0) + 1;
                 }
-                barberPreviewDiv.textContent = `Se você entrar agora, sua posição será aproximadamente: ${position}`;
+                barberPreviewDiv.textContent = `Sua posição será ${position}`;
             } catch (err) {
                 console.error(err);
                 barberPreviewDiv.textContent = '';
