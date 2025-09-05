@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para gerar token temporário
     async function fetchTempToken() {
         try {
-            const resp = await fetch(`${API_BASE_URL}/auth/temp-token`);
+            const resp = await fetch(`${API_BASE_URL}/checkin`);
             if (!resp.ok) throw new Error('Erro ao obter token temporário');
             const data = await resp.json();
             return data.token;
