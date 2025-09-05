@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (position !== lastPreviewPosition) {
                 barberPreviewDiv.style.color = '#D4AF37';
-                barberPreviewDiv.textContent = `Sua posição será ${position}`;
+                barberPreviewDiv.textContent = `Sua posição será: ${position}`;
                 lastPreviewPosition = position;
             }
         } catch (err) {
