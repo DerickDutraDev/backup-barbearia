@@ -18,11 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentClientId = null;
     let queueCheckInterval = null;
 
-    // retry logic
-    let missingCount = 0;
-    const MAX_MISSING = 3;          // quantas checagens consecutivas sem achar antes de considerar removido
     const POLL_INTERVAL = 5000;     // 5s
-
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
     // Seleção do barbeiro (UI)
@@ -92,10 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 `Você é o número <b>${data.position}</b> da fila para cortar com <b>${barbers[barbeiroId]}</b>.`;
             new bootstrap.Modal(document.getElementById('queueModal')).show();
 
-            // reset counters e inicia polling
-            missingCount = 0;
             toggleSections(true);
-            startQueueCheck(true); // true => run immediate check
+            startQueueCheck(true);
         } catch (error) {
             console.error('Erro ao entrar na fila:', error);
             alert(`Erro ao entrar na fila: ${error.message || 'Erro desconhecido'}`);
@@ -136,13 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Limpa sessão local
     function clearClientSession() {
         currentClientId = null;
-        missingCount = 0;
         localStorage.removeItem('clientId');
         localStorage.removeItem('clientName');
         localStorage.removeItem('barber');
     }
 
-    // Checa posição via endpoint /public/position (mais confiável)
+    // Checa posição via endpoint /public/position
     async function checkMyPosition() {
         if (!currentClientId) {
             stopQueueCheck();
@@ -150,47 +143,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // endpoint dedicado que retorna só a posição do clientId
             const resp = await fetch(`${API_BASE_URL}/public/position?clientId=${currentClientId}`);
             if (!resp.ok) {
-                // fallback: não remova imediatamente, incremente missing e volte
-                missingCount++;
-                console.warn('position endpoint erro, missingCount:', missingCount);
+                console.warn('Erro no endpoint de posição');
+                return;
+            }
+
+            const data = await resp.json();
+            if (data && data.found) {
+                queuePositionDisplay.textContent = data.position;
+                barberNameDisplay.textContent = barbers[data.barber] || (localStorage.getItem('barber') || '');
+                clientNameDisplay.textContent = data.name || localStorage.getItem('clientName') || '';
+                document.getElementById('queue-message').textContent = 'Você já está na fila. Por favor, aguarde seu atendimento.';
+                toggleSections(true);
+                return;
             } else {
-                const data = await resp.json();
-                if (data && data.found) {
-                    // sucesso: atualiza UI e reseta contador de faltas
-                    missingCount = 0;
-                    queuePositionDisplay.textContent = data.position;
-                    barberNameDisplay.textContent = barbers[data.barber] || (localStorage.getItem('barber') || '');
-                    clientNameDisplay.textContent = data.name || localStorage.getItem('clientName') || '';
-                    document.getElementById('queue-message').textContent = 'Você já está na fila. Por favor, aguarde seu atendimento.';
-                    // ensure UI showed
-                    toggleSections(true);
-                    return;
-                } else {
-                    // not found
-                    missingCount++;
-                    console.log('Client não encontrado na posição (missingCount):', missingCount);
-                }
+                // 🔥 removido imediatamente
+                console.log('Cliente não encontrado → removendo imediatamente');
+                clearClientSession();
+                stopQueueCheck();
+                toggleSections(false);
             }
         } catch (err) {
             console.error('Erro checando posição:', err);
-            missingCount++;
-        }
-
-        // só remove depois de várias tentativas sem sucesso
-        if (missingCount >= MAX_MISSING) {
-            console.log('Cliente considerado removido após', missingCount, 'tentativas.');
-            clearClientSession();
-            stopQueueCheck();
-            toggleSections(false);
         }
     }
 
     function startQueueCheck(runImmediate = false) {
         if (queueCheckInterval) clearInterval(queueCheckInterval);
-        if (runImmediate) checkMyPosition(); // checar na hora ao iniciar
+        if (runImmediate) checkMyPosition();
         queueCheckInterval = setInterval(checkMyPosition, POLL_INTERVAL);
     }
 
@@ -212,11 +193,9 @@ document.addEventListener('DOMContentLoaded', () => {
             clientNameDisplay.textContent = savedName || '';
             barberNameDisplay.textContent = barbers[savedBarber] || savedBarber;
             toggleSections(true);
-            missingCount = 0;
-            startQueueCheck(true); // checa imediatamente
+            startQueueCheck(true);
         }
     }
 
-    // iniciar restauração
     restoreClientSession();
 });
