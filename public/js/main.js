@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentClientId = null;
     let queueCheckInterval = null;
     let previewInterval = null;
+    let tempToken = null; // Token temporário necessário para entrar na fila
 
     const POLL_INTERVAL = 1500;
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Atualiza preview de posição (somente se mudou)
+    // Preview da posição na fila
     let lastPreviewPosition = null;
     async function updateBarberPreview() {
         const barberId = selectedBarberInput.value;
@@ -72,11 +73,26 @@ document.addEventListener('DOMContentLoaded', () => {
         else stopPreviewInterval();
     }
 
+    // Função para gerar token temporário
+    async function fetchTempToken() {
+        try {
+            const resp = await fetch(`${API_BASE_URL}/auth/temp-token`);
+            if (!resp.ok) throw new Error('Erro ao obter token temporário');
+            const data = await resp.json();
+            return data.token;
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao gerar token temporário');
+            return null;
+        }
+    }
+
     // Entrar na fila
     clienteForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nome = nomeClienteInput.value.trim();
         const barberId = selectedBarberInput.value;
+
         if (!nome) { nomeClienteInput.classList.add('is-invalid'); nomeErrorDiv.textContent='Digite seu nome'; return; }
         else { nomeClienteInput.classList.remove('is-invalid'); nomeErrorDiv.textContent=''; }
         if (!barberId) { barbeiroErrorDiv.textContent='Selecione um barbeiro'; return; }
@@ -85,13 +101,19 @@ document.addEventListener('DOMContentLoaded', () => {
         joinQueueBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Entrando...';
 
         try {
-            const resp = await fetch(`${API_BASE_URL}/public/join-queue`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({name:nome, barber:barberId})
-            });
-            if (!resp.ok) throw new Error((await resp.json().catch(()=>({error:'Erro'}))).error);
+            // Busca token temporário antes de entrar na fila
+            tempToken = await fetchTempToken();
+            if (!tempToken) throw new Error('Token inválido');
 
+            const resp = await fetch(`${API_BASE_URL}/public/join-queue`, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({name: nome, barber: barberId, token: tempToken})
+            });
+
+            if (!resp.ok) throw new Error((await resp.json().catch(()=>({error:'Erro'}))).error);
             const data = await resp.json();
+
             currentClientId = data.clientId;
             localStorage.setItem('clientId', currentClientId);
             localStorage.setItem('clientName', nome);
@@ -106,36 +128,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
             toggleSections(true);
             startQueueCheck(true);
-        } catch (err) { console.error(err); alert('Erro ao entrar na fila'); }
-        finally { joinQueueBtn.disabled=false; joinQueueBtn.innerHTML='<i class="fas fa-paper-plane me-2"></i> Entrar na Fila'; }
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao entrar na fila');
+        } finally {
+            joinQueueBtn.disabled=false;
+            joinQueueBtn.innerHTML='<i class="fas fa-paper-plane me-2"></i> Entrar na Fila';
+        }
     });
 
-    btnSairFila.addEventListener('click', async ()=>{
+    // Sair da fila
+    btnSairFila.addEventListener('click', async () => {
         if(!currentClientId) return;
         btnSairFila.disabled=true;
         btnSairFila.innerHTML='<i class="fas fa-spinner fa-spin me-2"></i> Saindo...';
-        try{
+        try {
             const resp = await fetch(`${API_BASE_URL}/public/leave-queue`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({clientId:currentClientId})
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({clientId: currentClientId})
             });
-            if(resp.ok){ stopQueueCheck(); clearClientSession(); toggleSections(false); }
-            else alert('Erro ao sair da fila');
-        }catch(e){ console.error(e); alert('Erro de conexão'); }
+            if(resp.ok) {
+                stopQueueCheck();
+                clearClientSession();
+                toggleSections(false);
+            } else alert('Erro ao sair da fila');
+        } catch(e) { console.error(e); alert('Erro de conexão'); }
         finally { btnSairFila.disabled=false; btnSairFila.innerHTML='<i class="fas fa-door-open me-2"></i> Sair da Fila'; }
     });
 
-    function clearClientSession(){
+    function clearClientSession() {
         currentClientId=null;
+        tempToken=null;
         localStorage.removeItem('clientId');
         localStorage.removeItem('clientName');
         localStorage.removeItem('barber');
     }
 
     let lastPosition=null;
-    async function checkMyPosition(){
+    async function checkMyPosition() {
         if(!currentClientId){ stopQueueCheck(); return; }
-        try{
+        try {
             const resp = await fetch(`${API_BASE_URL}/public/position?clientId=${currentClientId}`);
             if(!resp.ok) return;
             const data = await resp.json();
@@ -151,13 +184,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 stopQueueCheck();
                 toggleSections(false);
             }
-        }catch(e){ console.error(e); }
+        } catch(e) { console.error(e); }
     }
 
     function startQueueCheck(runImmediate=false){ stopQueueCheck(); if(runImmediate) checkMyPosition(); queueCheckInterval=setInterval(checkMyPosition,POLL_INTERVAL); }
     function stopQueueCheck(){ if(queueCheckInterval){clearInterval(queueCheckInterval); queueCheckInterval=null;} }
 
-    function restoreClientSession(){
+    function restoreClientSession() {
         const savedClientId = localStorage.getItem('clientId');
         const savedName = localStorage.getItem('clientName');
         const savedBarber = localStorage.getItem('barber');
