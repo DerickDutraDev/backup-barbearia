@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentClientId = null;
     let queueCheckInterval = null;
     let previewInterval = null;
-    let tempToken = null; // Token temporário necessário para entrar na fila
+    let tempToken = null;
 
     const POLL_INTERVAL = 1500;
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
-    // Seleção do barbeiro (UI)
+    // Seleção do barbeiro
     barberItems.forEach(item => {
         item.addEventListener('click', () => {
             barberItems.forEach(i => i.classList.remove('selected'));
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Preview da posição na fila
+    // Preview da posição
     let lastPreviewPosition = null;
     async function updateBarberPreview() {
         const barberId = selectedBarberInput.value;
@@ -79,7 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const resp = await fetch(`${API_BASE_URL}/checkin`);
             if (!resp.ok) throw new Error('Erro ao obter token temporário');
             const data = await resp.json();
-            return data.token;
+            const urlParams = new URL(data.joinUrl).searchParams;
+            return urlParams.get('token');
         } catch (err) {
             console.error(err);
             alert('Erro ao gerar token temporário');
@@ -101,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         joinQueueBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Entrando...';
 
         try {
-            // Busca token temporário antes de entrar na fila
             tempToken = await fetchTempToken();
             if (!tempToken) throw new Error('Token inválido');
 
