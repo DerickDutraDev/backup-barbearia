@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let queueCheckInterval = null;
     let previewInterval = null;
 
-    const POLL_INTERVAL = 5000;     // 5s
+    const POLL_INTERVAL = 5000; // 5s
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
     // Seleção do barbeiro (UI) com preview da posição
@@ -30,14 +30,18 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.add('selected');
             selectedBarberInput.value = item.dataset.barber.toLowerCase();
             barbeiroErrorDiv.textContent = '';
-            updateBarberPreview();
+            updateBarberPreview(); // Atualização instantânea
         });
     });
 
     // Atualiza preview de posição
     async function updateBarberPreview() {
         const barberId = selectedBarberInput.value;
-        if (!barberId) return;
+        if (!barberId) {
+            barberPreviewDiv.textContent = '';
+            return;
+        }
+
         barberPreviewDiv.style.color = '#D4AF37';
         barberPreviewDiv.textContent = 'Carregando...';
 
@@ -45,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const resp = await fetch(`${API_BASE_URL}/public/barber-queue/${barberId}`);
             if (!resp.ok) throw new Error('Erro ao buscar fila');
             const data = await resp.json();
-            const nome = nomeClienteInput.value.trim();
             const position = (data.queue?.length || 0) + 1;
             barberPreviewDiv.textContent = `Sua posição será ${position}`;
         } catch (err) {
@@ -54,11 +57,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Atualiza preview instantaneamente ao digitar o nome
+    nomeClienteInput.addEventListener('input', () => {
+        updateBarberPreview();
+    });
+
     // Atualiza preview a cada 5s
     function startPreviewInterval() {
         if (previewInterval) clearInterval(previewInterval);
         previewInterval = setInterval(updateBarberPreview, POLL_INTERVAL);
     }
+
     function stopPreviewInterval() {
         if (previewInterval) clearInterval(previewInterval);
     }
