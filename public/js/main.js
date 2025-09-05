@@ -5,57 +5,69 @@ document.addEventListener('DOMContentLoaded', () => {
     const nomeClienteInput = document.getElementById('nome-cliente');
     const nomeErrorDiv = document.getElementById('nome-error');
     const barbeiroErrorDiv = document.getElementById('barber-error');
-    const barberPreviewDiv = document.getElementById('barber-preview');
     const clienteFormSection = document.getElementById('cliente-form-section');
     const queueResponseSection = document.getElementById('queue-response');
     const joinQueueBtn = document.getElementById('join-queue-btn');
     const btnSairFila = document.getElementById('btn-sair-fila');
     const barberItems = document.querySelectorAll('.barber-item');
     const selectedBarberInput = document.getElementById('selected-barber');
+    const barberPreviewDiv = document.getElementById('barber-preview');
     const clientNameDisplay = document.getElementById('client-name-display');
     const barberNameDisplay = document.getElementById('barber-name-display');
     const queuePositionDisplay = document.getElementById('queue-position-display');
 
     let currentClientId = null;
     let queueCheckInterval = null;
+    let previewInterval = null;
 
-    const POLL_INTERVAL = 5000; // 5s
+    const POLL_INTERVAL = 5000;     // 5s
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
-    // Seleção do barbeiro (UI)
-    // Seleção do barbeiro (UI)
+    // Seleção do barbeiro (UI) com preview da posição
     barberItems.forEach(item => {
-        item.addEventListener('click', async () => {
+        item.addEventListener('click', () => {
             barberItems.forEach(i => i.classList.remove('selected'));
             item.classList.add('selected');
             selectedBarberInput.value = item.dataset.barber.toLowerCase();
             barbeiroErrorDiv.textContent = '';
-    
-            // Preview da posição
-            const barberId = item.dataset.barber.toLowerCase();
-            barberPreviewDiv.textContent = 'Carregando...';
-            barberPreviewDiv.style.color = '#D4AF37';
-            try {
-                const resp = await fetch(`${API_BASE_URL}/public/barber-queue/${barberId}`);
-                if (!resp.ok) throw new Error('Erro ao buscar fila');
-                const data = await resp.json();
-                const nome = nomeClienteInput.value.trim();
-                let position = 1;
-                if (nome) {
-                    // posição provável se o cliente entrasse agora
-                    position = (data.queue?.length || 0) + 1;
-                }
-                barberPreviewDiv.textContent = `Sua posição será: ${position}`;
-            } catch (err) {
-                console.error(err);
-                barberPreviewDiv.textContent = '';
-            }
+            updateBarberPreview();
         });
     });
+
+    // Atualiza preview de posição
+    async function updateBarberPreview() {
+        const barberId = selectedBarberInput.value;
+        if (!barberId) return;
+        barberPreviewDiv.style.color = '#D4AF37';
+        barberPreviewDiv.textContent = 'Carregando...';
+
+        try {
+            const resp = await fetch(`${API_BASE_URL}/public/barber-queue/${barberId}`);
+            if (!resp.ok) throw new Error('Erro ao buscar fila');
+            const data = await resp.json();
+            const nome = nomeClienteInput.value.trim();
+            const position = (data.queue?.length || 0) + 1;
+            barberPreviewDiv.textContent = `Sua posição será ${position}`;
+        } catch (err) {
+            console.error(err);
+            barberPreviewDiv.textContent = '';
+        }
+    }
+
+    // Atualiza preview a cada 5s
+    function startPreviewInterval() {
+        if (previewInterval) clearInterval(previewInterval);
+        previewInterval = setInterval(updateBarberPreview, POLL_INTERVAL);
+    }
+    function stopPreviewInterval() {
+        if (previewInterval) clearInterval(previewInterval);
+    }
 
     function toggleSections(showQueueResponse = false) {
         clienteFormSection.style.display = showQueueResponse ? 'none' : 'block';
         queueResponseSection.style.display = showQueueResponse ? 'block' : 'none';
+        if (!showQueueResponse) startPreviewInterval();
+        else stopPreviewInterval();
     }
 
     // Entrar na fila
@@ -166,13 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!resp.ok) return;
 
             const data = await resp.json();
-            if (data?.found) {
+            if (data && data.found) {
                 queuePositionDisplay.textContent = data.position;
                 barberNameDisplay.textContent = barbers[data.barber] || (localStorage.getItem('barber') || '');
                 clientNameDisplay.textContent = data.name || localStorage.getItem('clientName') || '';
                 document.getElementById('queue-message').textContent = 'Você já está na fila. Por favor, aguarde seu atendimento.';
                 toggleSections(true);
-                return;
             } else {
                 clearClientSession();
                 stopQueueCheck();
@@ -207,6 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
             barberNameDisplay.textContent = barbers[savedBarber] || savedBarber;
             toggleSections(true);
             startQueueCheck(true);
+        } else {
+            startPreviewInterval(); // inicia preview em tempo real
         }
     }
 
