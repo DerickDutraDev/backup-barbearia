@@ -6,43 +6,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getAccessToken() { return localStorage.getItem(accessTokenKey); }
     function getRefreshToken() { return localStorage.getItem(refreshTokenKey); }
-    function setTokens(a, r) { localStorage.setItem(accessTokenKey, a); localStorage.setItem(refreshTokenKey, r); }
+    function setTokens(a,r) { localStorage.setItem(accessTokenKey,a); localStorage.setItem(refreshTokenKey,r); }
     function clearTokens() { localStorage.removeItem(accessTokenKey); localStorage.removeItem(refreshTokenKey); }
-    function handleLogout() {
-        clearTokens();
-        window.location.href = '/';
-    }
+    function handleLogout() { clearTokens(); window.location.href = '/'; }
 
-    async function fetchWithAuth(url, options = {}) {
+    async function fetchWithAuth(url, options={}) {
         let token = getAccessToken();
-        if (!options.headers) options.headers = {};
-        options.headers['Authorization'] = `Bearer ${token}`;
+        if(!options.headers) options.headers={};
+        options.headers['Authorization']=`Bearer ${token}`;
 
-        let response = await fetch(url, options);
+        let response = await fetch(url,options);
 
-        if (response.status === 401 || response.status === 403) {
+        if(response.status===401 || response.status===403){
             const refreshToken = getRefreshToken();
-            if (!refreshToken) { handleLogout(); return; }
+            if(!refreshToken){ handleLogout(); return; }
 
             const refreshResp = await fetch(`${API_BASE_URL}/auth/refresh`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refreshToken })
+                method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({refreshToken})
             });
-
-            if (!refreshResp.ok) { handleLogout(); return; }
+            if(!refreshResp.ok){ handleLogout(); return; }
 
             const data = await refreshResp.json();
-            setTokens(data.accessToken, data.refreshToken);
+            setTokens(data.accessToken,data.refreshToken);
 
             options.headers['Authorization'] = `Bearer ${data.accessToken}`;
-            response = await fetch(url, options);
+            response = await fetch(url,options);
         }
-
         return response;
     }
 
-    const barbers = ['Junior', 'Yago', 'Reine'];
+    const barbers = ['Junior','Yago','Reine'];
     const btnLogout = document.getElementById('btn-logout');
     const addClientForm = document.getElementById('add-client-form');
     const addClientModal = new bootstrap.Modal(document.getElementById('addClientModal'));
@@ -56,48 +49,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentQueues = { junior: [], yago: [], reine: [] };
     let fetchingQueues = false;
+    const POLL_INTERVAL = 1500; // 1,5s
 
-    function updateTime() {
+    function updateTime(){
         const now = new Date();
-        if (timeElement) timeElement.textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        if(timeElement) timeElement.textContent = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     }
     updateTime();
-    setInterval(updateTime, 1000);
+    setInterval(updateTime,1000);
 
     // Atualização incremental da fila
-    function renderQueuesIncremental(data) {
-        barbers.forEach(barber => {
+    function renderQueuesIncremental(data){
+        barbers.forEach(barber=>{
             const key = barber.toLowerCase();
             const queueList = document.getElementById(`queue-${key}`);
-            if (!queueList) return;
+            if(!queueList) return;
 
             const newQueue = data[key] || [];
             const oldQueue = currentQueues[key] || [];
 
-            // Remove clientes que saíram
-            const oldIds = new Set(oldQueue.map(c => c.clientId));
-            const newIds = new Set(newQueue.map(c => c.clientId));
+            const oldIds = new Set(oldQueue.map(c=>c.clientId));
+            const newIds = new Set(newQueue.map(c=>c.clientId));
 
-            oldQueue.forEach(client => {
-                if (!newIds.has(client.clientId)) {
+            // Remove clientes que saíram
+            oldQueue.forEach(client=>{
+                if(!newIds.has(client.clientId)){
                     const li = queueList.querySelector(`[data-client-id="${client.clientId}"]`);
-                    if (li) li.remove();
+                    if(li) li.remove();
                 }
             });
 
-            // Remove o item "Nenhum cliente na fila" se houver novos clientes
+            // Remove "Nenhum cliente na fila" se houver novos clientes
             const emptyItem = queueList.querySelector('.empty-queue');
-            if (emptyItem && newQueue.length > 0) emptyItem.remove();
+            if(emptyItem && newQueue.length>0) emptyItem.remove();
 
             // Adiciona novos clientes
-            newQueue.forEach((client, idx) => {
-                if (!oldIds.has(client.clientId)) {
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item d-flex justify-content-between align-items-center animate-fade-in';
-                    li.dataset.clientId = client.clientId;
-                    li.innerHTML = `
+            newQueue.forEach((client,idx)=>{
+                if(!oldIds.has(client.clientId)){
+                    const li=document.createElement('li');
+                    li.className='list-group-item d-flex justify-content-between align-items-center animate-fade-in';
+                    li.dataset.clientId=client.clientId;
+                    li.innerHTML=`
                         <div class="client-info">
-                            <span class="queue-number">${idx + 1}.</span>
+                            <span class="queue-number">${idx+1}.</span>
                             <span>${client.name}</span>
                         </div>
                         <button class="btn btn-sm btn-atender" data-client-id="${client.clientId}" data-barber="${barber}">
@@ -107,119 +101,87 @@ document.addEventListener('DOMContentLoaded', () => {
                     queueList.appendChild(li);
 
                     const btnAtender = li.querySelector('.btn-atender');
-                    btnAtender.addEventListener('click', async () => {
-                        try {
-                            const response = await fetchWithAuth(`${API_BASE_URL}/barber/serve-client`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ clientId: client.clientId })
+                    btnAtender.addEventListener('click', async()=>{
+                        try{
+                            const resp = await fetchWithAuth(`${API_BASE_URL}/barber/serve-client`,{
+                                method:'POST', headers:{'Content-Type':'application/json'},
+                                body:JSON.stringify({clientId:client.clientId})
                             });
-                            if (!response.ok) {
-                                console.error('Erro ao atender cliente:', await response.text());
-                                return;
-                            }
-
+                            if(!resp.ok){ console.error('Erro ao atender:', await resp.text()); return; }
                             li.remove();
-                            if (queueList.querySelectorAll('li.list-group-item:not(.empty-queue)').length === 0) {
-                                queueList.innerHTML = '<li class="list-group-item empty-queue animate-fade-in">Nenhum cliente na fila.</li>';
+                            if(queueList.querySelectorAll('li.list-group-item:not(.empty-queue)').length===0){
+                                queueList.innerHTML='<li class="list-group-item empty-queue animate-fade-in">Nenhum cliente na fila.</li>';
                             }
-
-                            // 🔥 força atualização imediata
                             fetchQueuesSafe();
-
-                        } catch (error) {
-                            console.error('Erro de conexão:', error);
-                        }
+                        }catch(e){ console.error(e); }
                     });
                 }
             });
 
-            // ✅ Garante mensagem se fila estiver vazia
-            if (newQueue.length === 0) {
-                if (!queueList.querySelector('.empty-queue')) {
-                    queueList.innerHTML = '<li class="list-group-item empty-queue animate-fade-in">Nenhum cliente na fila.</li>';
-                }
+            // Mensagem se fila vazia
+            if(newQueue.length===0 && !queueList.querySelector('.empty-queue')){
+                queueList.innerHTML='<li class="list-group-item empty-queue animate-fade-in">Nenhum cliente na fila.</li>';
             }
 
-            // Atualiza numeração
+            // Atualiza numeração incremental
             const items = queueList.querySelectorAll('li.list-group-item:not(.empty-queue)');
-            items.forEach((li, idx) => {
+            items.forEach((li,idx)=>{
                 const num = li.querySelector('.queue-number');
-                if (num) num.textContent = `${idx + 1}.`;
+                if(num) num.textContent=`${idx+1}.`;
             });
 
-            currentQueues[key] = newQueue;
+            currentQueues[key]=newQueue;
         });
     }
 
-    async function fetchQueuesSafe() {
-        if (fetchingQueues) return;
-        fetchingQueues = true;
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/barber/queues`, { headers: { 'Content-Type': 'application/json' } });
-            if (!response.ok) throw new Error('Erro ao buscar filas');
-            const data = await response.json();
+    async function fetchQueuesSafe(){
+        if(fetchingQueues) return;
+        fetchingQueues=true;
+        try{
+            const resp = await fetchWithAuth(`${API_BASE_URL}/barber/queues`, {headers:{'Content-Type':'application/json'}});
+            if(!resp.ok) throw new Error('Erro ao buscar filas');
+            const data = await resp.json();
             renderQueuesIncremental(data);
-        } catch (error) {
-            console.error('Erro:', error);
-        } finally {
-            fetchingQueues = false;
-        }
+        }catch(e){ console.error(e); }
+        finally{ fetchingQueues=false; }
     }
 
     // Barbeiro modal
-    barberItemsModal.forEach(btn => {
-        btn.addEventListener('click', () => {
-            barberItemsModal.forEach(b => b.classList.remove('active'));
+    barberItemsModal.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            barberItemsModal.forEach(b=>b.classList.remove('active'));
             btn.classList.add('active');
             selectedBarberModalInput.value = btn.getAttribute('data-barber').toLowerCase();
-            barberModalErrorDiv.textContent = '';
+            barberModalErrorDiv.textContent='';
         });
     });
 
-    // Adicionar cliente
-    if (addClientForm) {
-        addClientForm.addEventListener('submit', async (e) => {
+    // Adicionar cliente manual
+    if(addClientForm){
+        addClientForm.addEventListener('submit', async(e)=>{
             e.preventDefault();
-
             const clientName = clientNameInput.value.trim();
             const barber = selectedBarberModalInput.value;
-
-            clientNameErrorDiv.textContent = '';
-            barberModalErrorDiv.textContent = '';
-
-            if (!clientName) { clientNameErrorDiv.textContent = 'Digite o nome do cliente'; return; }
-            if (!barber) { barberModalErrorDiv.textContent = 'Escolha um barbeiro'; return; }
-
-            try {
-                const response = await fetchWithAuth(`${API_BASE_URL}/barber/adicionar-cliente-manual`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome: clientName, barber })
+            if(!clientName){ clientNameErrorDiv.textContent='Digite o nome'; return; }
+            if(!barber){ barberModalErrorDiv.textContent='Escolha um barbeiro'; return; }
+            try{
+                const resp = await fetchWithAuth(`${API_BASE_URL}/barber/adicionar-cliente-manual`,{
+                    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome:clientName,barber})
                 });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText);
-                }
-
+                if(!resp.ok) throw new Error(await resp.text());
                 addClientModal.hide();
-                clientNameInput.value = '';
-                selectedBarberModalInput.value = '';
-                barberItemsModal.forEach(btn => btn.classList.remove('active'));
-
+                clientNameInput.value='';
+                selectedBarberModalInput.value='';
+                barberItemsModal.forEach(b=>b.classList.remove('active'));
                 successModal.show();
-                setTimeout(() => successModal.hide(), 1000);
-
+                setTimeout(()=>successModal.hide(),1000);
                 fetchQueuesSafe();
-            } catch (error) {
-                console.error('Erro ao adicionar cliente:', error);
-            }
+            }catch(e){ console.error(e); }
         });
     }
 
-    if (btnLogout) btnLogout.addEventListener('click', handleLogout);
+    if(btnLogout) btnLogout.addEventListener('click', handleLogout);
 
     fetchQueuesSafe();
-    setInterval(fetchQueuesSafe, 5000);
+    setInterval(fetchQueuesSafe,POLL_INTERVAL);
 });
