@@ -1,0 +1,242 @@
+/* Definição de Variáveis CSS */
+:root {
+    --bg-color: #1a1a1a;
+    --card-color: #2b2b2b;
+    --text-color-dark: #f8f9fa;
+    --text-color-medium: #E0E0E0;
+    --gold-color: #FAD27B;
+    --gold-dark: #C6A662;
+    --secondary-color: #4a4a4a;
+    --secondary-hover: #5a5a5a;
+    --danger-color: #dc3545;
+    --danger-hover: #c82333;
+    --input-bg: #3b3b3b;
+    --input-border: #5a5a5a;
+    --shadow-light: rgba(250, 210, 123, 0.25);
+    --shadow-dark: rgba(0, 0, 0, 0.4);
+    --border-radius-lg: 1.5rem;
+    --border-radius-sm: 0.75rem;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color-dark);
+    font-family: 'Poppins', sans-serif;
+    /* A Nova Fonte! */
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Efeito de gradiente suave no fundo */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top left, var(--secondary-color) 0%, transparent 40%),
+        radial-gradient(circle at bottom right, var(--secondary-color) 0%, transparent 40%);
+    opacity: 0.1;
+    z-index: -1;
+    transition: background 0.5s ease-in-out;
+}
+
+/* Estilo do Card principal */
+.custom-card {
+    background-color: var(--card-color);
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 10px 30px var(--shadow-dark);
+    transition: transform 0.3s ease-in-out;
+    width: 100%;
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Estilo do Logo com animação de pulsação */
+.logo-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold-color);
+    box-shadow: 0 0 20px var(--shadow-light);
+    transition: transform 0.3s ease-in-out;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.logo-img:hover {
+    transform: scale(1.05);
+}
+
+.custom-title {
+    color: var(--gold-color);
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+.custom-title-access {
+    color: var(--text-color-dark);
+    font-weight: 500;
+}
+
+.custom-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-color-medium);
+}
+
+/* Estilos para os botões */
+.custom-btn {
+    background-color: var(--gold-color);
+    border-color: var(--gold-color);
+    color: var(--card-color);
+    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-btn:hover {
+    background-color: var(--gold-dark);
+    border-color: var(--gold-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(250, 210, 123, 0.3);
+}
+
+.custom-btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: white;
+    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-btn-danger:hover {
+    background-color: var(--danger-hover);
+    border-color: var(--danger-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--text-color-dark);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover);
+    border-color: var(--secondary-hover);
+}
+
+/* Estilos para Inputs e Selects */
+.custom-input {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-color-dark);
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-input::placeholder {
+    color: var(--text-color-medium);
+}
+
+.custom-input:focus {
+    background-color: var(--card-color);
+    border-color: var(--gold-color);
+    box-shadow: 0 0 0 0.25rem var(--shadow-light);
+    color: var(--text-color-dark);
+}
+
+/* Estilo do Alerta de Fila */
+.custom-alert-info {
+    background-color: var(--input-bg);
+    border-color: var(--gold-color);
+    color: var(--gold-color);
+    font-weight: bold;
+    border-left: 4px solid var(--gold-color);
+    border-radius: var(--border-radius-sm);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Estilo para o botão de voltar (link) */
+.btn-link {
+    color: var(--text-color-medium);
+    text-decoration: none;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.btn-link:hover {
+    color: var(--gold-color);
+    text-decoration: underline;
+}
+
+/* Animações Keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(250, 210, 123, 0.25);
+    }
+
+    50% {
+        transform: scale(1.03);
+        box-shadow: 0 0 35px var(--gold-color);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(250, 210, 123, 0.25);
+    }
+}
+
+/* Media Queries para responsividade */
+/* Para telas pequenas (mobile) - até 576px */
+@media (max-width: 576px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .custom-title {
+        font-size: 1.5rem;
+    }
+
+    .logo-img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .custom-card {
+        padding: 1.5rem;
+    }
+}
+
+/* Para tablets (entre 577px e 992px) */
+@media (min-width: 577px) and (max-width: 992px) {
+    .container {
+        max-width: 600px;
+    }
+}
+
+/* Para desktops (a partir de 993px) */
+@media (min-width: 993px) {
+    .container {
+        max-width: 600px;
+    }
+}

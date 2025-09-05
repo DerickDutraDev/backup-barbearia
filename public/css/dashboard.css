@@ -1,0 +1,327 @@
+/* Definição de Variáveis CSS */
+:root {
+    --bg-color: #1a1a1a;
+    --card-color: #2c2c2c;
+    --text-color-dark: #ffffff;
+    --text-color-medium: #b4b4b4;
+    --gold-color: #d4af37;
+    --gold-dark: #b8942b;
+    --secondary-color: #2c2c2c;
+    --secondary-hover: #5a5a5a;
+    --border-color: #4a4a4a;
+    --success-color: #d4af37;
+    --success-hover: #b8942b;
+    --shadow-dark: rgba(0, 0, 0, 0.4);
+    --border-radius-lg: 1rem;
+    --border-radius-sm: 0.5rem;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color-dark);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    background-image: radial-gradient(circle at center, #2e2e2e 0%, #121212 100%);
+    background-size: 100% 100%, 100% 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--bg-color);
+    border-bottom: none !important;
+}
+.logo-nav {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--gold-color);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+.navbar-brand .custom-title-nav {
+    color: var(--gold-color);
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+.navbar-text {
+    color: var(--text-color-medium);
+}
+.btn-logout {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color-dark);
+    transition: all 0.2s ease-in-out;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+}
+.btn-logout:hover {
+    background-color: var(--secondary-color);
+    color: var(--gold-color);
+    border-color: var(--gold-color);
+}
+.btn-add-client {
+    background-color: var(--gold-color);
+    border: 1px solid var(--gold-color);
+    color: var(--bg-color);
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+}
+.btn-add-client:hover {
+    background-color: var(--gold-dark);
+    border-color: var(--gold-dark);
+    transform: scale(1.05);
+}
+.time-display {
+    color: var(--text-color-medium);
+    font-family: 'Poppins', monospace;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+/* Container Principal e Cards */
+.container {
+    max-width: 1200px;
+}
+h2.text-warning {
+    color: var(--gold-color) !important;
+    font-size: 2rem;
+    font-weight: 600;
+}
+.card-barber {
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease-in-out;
+}
+.card-barber:hover {
+    transform: translateY(-5px);
+}
+.card-barber .card-header {
+    background-color: var(--card-color);
+    color: var(--gold-color);
+    font-weight: bold;
+    border-bottom: 1px solid var(--border-color);
+    border-top-left-radius: var(--border-radius-lg);
+    border-top-right-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.card-barber .card-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, var(--gold-color), transparent);
+}
+
+/* Lista de Clientes na Fila */
+.list-group {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    padding: 0;
+}
+.list-group-empty {
+    padding: 1rem;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.list-group-item {
+    background-color: var(--secondary-color);
+    color: var(--text-color-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    margin: 1rem; /* Adiciona margin para espaçamento entre os itens */
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+}
+.list-group-item:first-child {
+    margin-top: 1rem;
+}
+.list-group-item:last-child {
+    margin-bottom: 1rem;
+}
+.list-group-item:hover {
+    background-color: var(--secondary-hover);
+    transform: scale(1.02);
+}
+.list-group-item.empty-queue {
+    font-style: italic;
+    color: var(--text-color-medium);
+    text-align: center;
+    padding: 2rem;
+    background-color: transparent;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.client-info {
+    display: flex;
+    align-items: center;
+}
+.client-info .queue-number {
+    font-weight: bold;
+    font-size: 1.25rem;
+    color: var(--gold-color);
+    margin-right: 0.5rem;
+}
+.client-info span {
+    font-weight: 500;
+}
+
+/* Botão de Atender */
+.btn-atender {
+    background-color: var(--success-color);
+    border: none;
+    color: var(--bg-color);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+}
+.btn-atender:hover {
+    background-color: var(--success-hover);
+    transform: scale(1.05);
+}
+
+/* Modal de Adicionar Cliente */
+.modal-content {
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    color: var(--text-color-dark);
+}
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+}
+.modal-title {
+    color: var(--text-color-dark);
+}
+.modal-body .form-control,
+.modal-body .form-select {
+    background-color: var(--secondary-color);
+    border-color: var(--border-color);
+    color: var(--text-color-dark);
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-sm);
+}
+.modal-body .form-control::placeholder {
+    color: var(--text-color-medium);
+}
+.modal-body .form-control:focus,
+.modal-body .form-select:focus {
+    border-color: var(--gold-color);
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.4);
+    outline: none;
+}
+.btn-add-in-modal {
+    background-color: var(--gold-color);
+    border-color: var(--gold-color);
+    color: var(--bg-color);
+    font-weight: bold;
+    transition: all 0.2s ease-in-out;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-sm);
+}
+.btn-add-in-modal:hover {
+    background-color: var(--gold-dark);
+    border-color: var(--gold-dark);
+    transform: translateY(-2px);
+}
+.btn-close {
+    filter: invert(1);
+    background-color: transparent;
+    border: none;
+}
+
+/* Estilo para a logo do modal de sucesso */
+.logo-modal-success {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffc107; /* Borda dourada para combinar com a identidade */
+}
+
+/* Estilo para o conteúdo do modal de sucesso */
+.modal-content.bg-dark-custom {
+    border-radius: 1.5rem; /* Borda mais arredondada */
+    background-color: #212529; /* Certifique-se de que a cor de fundo seja a desejada */
+}
+
+/* Adicione esta classe para o efeito glow se ainda não tiver */
+.gold-glow {
+    box-shadow: 0 0 10px #ffc107, 0 0 20px #ffc107;
+}
+
+/* Ajuste o tamanho do modal para o pop-up de sucesso */
+.modal-sm {
+    max-width: 300px;
+}
+
+/* Animação de fade-out do modal */
+.fade-out {
+    opacity: 0 !important;
+    transition: opacity 0.5s ease-in-out;
+}
+
+
+/* Botões de seleção no modal */
+#barber-selection-modal .barber-item {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color-dark);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-radius: var(--border-radius-sm);
+    padding: 0.75rem 0;
+    text-align: center;
+    font-weight: 500;
+    width: 100%;
+}
+#barber-selection-modal .barber-item:hover {
+    background-color: var(--secondary-hover);
+    border-color: var(--gold-color);
+}
+#barber-selection-modal .barber-item.active {
+    border-color: var(--gold-color);
+    background-color: var(--gold-color);
+    color: var(--bg-color);
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+/* Animações (réplica das animações de Framer Motion) */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Media Query para telas pequenas (se necessário para o dashboard) */
+@media (max-width: 768px) {
+    .container h2.text-warning {
+        font-size: 1.5rem;
+    }
+}

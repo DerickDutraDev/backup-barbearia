@@ -1,0 +1,339 @@
+/* Definição de Variáveis CSS */
+:root {
+    --bg-color: #121212;
+    --card-color: #1e1e1e;
+    --text-color-dark: #ffffff;
+    --text-color-medium: #b0b0b0;
+    --text-color-highlight: #f0f0f0;
+    --gold-color: #d4af37;
+    --gold-dark: #b8942b;
+    --secondary-color: #2c2c2c;
+    --border-color: #383838;
+    --danger-color: #ff4d4d;
+    --danger-hover: #e63939;
+    --success-color: #28a745;
+    --shadow-light: rgba(212, 175, 55, 0.3);
+    --shadow-dark: rgba(0, 0, 0, 0.4);
+    --border-radius-lg: 1.5rem;
+    --border-radius-sm: 0.75rem;
+}
+
+/* Base Body Styles */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color-dark);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Background Gradient Effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top left, var(--secondary-color) 0%, transparent 40%),
+                radial-gradient(circle at bottom right, var(--secondary-color) 0%, transparent 40%);
+    opacity: 0.1;
+    z-index: -1;
+}
+
+/* Main Container */
+.container {
+    max-width: 600px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Header - Logo, Title, Subtitle */
+.custom-title {
+    color: var(--gold-color);
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+.custom-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-color-medium);
+}
+
+.logo-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold-color);
+    box-shadow: 0 0 20px var(--shadow-light);
+    transition: transform 0.3s ease-in-out;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* Main Card and Effects */
+.custom-card {
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 16px var(--shadow-dark);
+    transition: all 0.3s ease-in-out;
+    width: 100%;
+    padding: 1.5rem;
+}
+
+/* Form and Inputs */
+.space-y-4 > * + * {
+    margin-top: 1rem;
+}
+
+.custom-title-access {
+    color: var(--text-color-dark);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: var(--text-color-dark);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.custom-input {
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color-dark) !important; /* CORREÇÃO AQUI */
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+    padding: 0.75rem 1rem;
+    width: 100%;
+}
+
+.custom-input::placeholder {
+    color: var(--text-color-medium);
+}
+
+.custom-input:focus {
+    border-color: var(--gold-color);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.4);
+    background-color: var(--card-color);
+    outline: none;
+}
+
+.custom-input.is-invalid, .custom-input.is-invalid:focus {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.4);
+}
+
+/* Barber Selection Buttons */
+.barber-item {
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color-dark);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-radius: var(--border-radius-sm);
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-weight: 500;
+    width: 100%;
+    display: block;
+}
+
+.barber-item:hover {
+    border-color: var(--gold-color);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.4);
+}
+
+.barber-item.selected {
+    border-color: var(--gold-color);
+    background-color: var(--gold-color);
+    color: var(--card-color);
+    font-weight: bold;
+    box-shadow: 0 0 10px var(--shadow-light);
+}
+
+/* Main Action Button (Entrar na Fila) */
+.custom-btn {
+    background-color: var(--gold-color);
+    border-color: var(--gold-color);
+    color: var(--card-color);
+    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.custom-btn:hover {
+    background-color: var(--gold-dark);
+    border-color: var(--gold-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+}
+
+.custom-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--gold-color);
+    border-color: var(--gold-color);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Danger Button (Sair da Fila) */
+.custom-btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: white;
+    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease-in-out;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.custom-btn-danger:hover {
+    background-color: var(--danger-hover);
+    border-color: var(--danger-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
+}
+
+.custom-btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Back Button */
+.btn-back-app {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: var(--text-color-medium);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease-in-out;
+    z-index: 10;
+}
+
+.btn-back-app:hover {
+    color: var(--gold-color);
+}
+
+/* --- SEÇÃO DE CORREÇÃO PARA A VISUALIZAÇÃO DA FILA --- */
+#queue-response {
+    text-align: center;
+}
+
+#queue-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem; /* Espaçamento entre os itens */
+}
+
+.queue-info-item {
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.queue-info-item .text-muted-foreground {
+    color: var(--text-color-medium);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.queue-info-item .font-semibold {
+    color: var(--text-color-highlight);
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+/* Novo estilo para a box de informações */
+.info-box {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Estilo para a frase de espera dentro da box */
+#queue-message {
+    font-size: 0.95rem;
+    color: var(--text-color-dark); /* CORREÇÃO AQUI */
+    margin-top: 0;
+    font-style: italic;
+}
+
+/* Modal Styles */
+.modal-content.bg-dark-custom {
+    background-color: var(--card-color);
+    border-radius: var(--border-radius-lg);
+    border: none;
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+    background-color: transparent;
+    border: none;
+}
+
+.modal-body .fas.fa-check-circle {
+    color: var(--success-color);
+    font-size: 3.5rem;
+}
+
+.modal-body p#modal-queue-info {
+    font-weight: bold;
+    font-size: 1.25rem;
+    color: var(--gold-color);
+    margin-top: 1rem;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 20px var(--shadow-light); }
+    50% { transform: scale(1.03); box-shadow: 0 0 35px var(--gold-color); }
+    100% { transform: scale(1); box-shadow: 0 0 20px var(--shadow-light); }
+}
+
+/* Responsividade */
+@media (max-width: 576px) {
+    .container { padding: 1rem; }
+    .custom-title { font-size: 1.75rem; }
+    .logo-img { width: 100px; height: 100px; }
+    .custom-card { padding: 1.25rem; }
+    .btn-back-app { top: 10px; left: 10px; }
+    .custom-btn, .custom-btn-danger, .barber-item { padding: 0.65rem 0.8rem; font-size: 0.95rem; }
+    
+    .queue-info-item {
+        flex-direction: row;
+        justify-content: center;
+        gap: 0.3rem;
+    }
+    .queue-info-item .text-muted-foreground { font-size: 0.9rem; }
+    .queue-info-item .font-semibold { font-size: 1rem; }
+}

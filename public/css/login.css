@@ -1,0 +1,227 @@
+/* ===== Variáveis ===== */
+:root {
+    --bg-color: #1a1a1a;
+    --card-color: #2b2b2b;
+    --text-color-dark: #f8f9fa;
+    --text-color-medium: #E0E0E0;
+    --gold-color: #FAD27B;
+    --gold-dark: #C6A662;
+    --secondary-color: #4a4a4a;
+    --secondary-hover: #5a5a5a;
+    --danger-color: #dc3545;
+    --danger-hover: #c82333;
+    --input-bg: #3b3b3b;
+    --input-border: #5a5a5a;
+    --shadow-light: rgba(250, 210, 123, 0.25);
+    --shadow-dark: rgba(0, 0, 0, 0.4);
+    --border-radius-lg: 1.5rem;
+    --border-radius-sm: 0.75rem;
+}
+
+/* ===== Body ===== */
+body {
+    background-color: var(--bg-color);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0 1rem;
+    color: var(--text-color-dark);
+    position: relative;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at top left, var(--secondary-color) 0%, transparent 40%),
+                radial-gradient(circle at bottom right, var(--secondary-color) 0%, transparent 40%);
+    opacity: 0.08;
+    z-index: -1;
+}
+
+/* ===== Botão voltar ===== */
+.btn-back-app {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    color: var(--text-color-medium);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.btn-back-app:hover {
+    color: var(--gold-color);
+    text-decoration: underline;
+}
+
+/* ===== Card ===== */
+.custom-card {
+    background-color: var(--card-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 15px 40px var(--shadow-dark);
+    width: 100%;
+    max-width: 420px;
+    padding: 1rem 1.5rem; /* Padding ajustado para um valor menor */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px var(--shadow-dark);
+}
+
+/* ===== Logo ===== */
+.logo-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold-color);
+    box-shadow: 0 0 25px var(--shadow-light);
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite ease-in-out;
+    transition: transform 0.3s ease-in-out;
+}
+
+.logo-img:hover {
+    transform: scale(1.05);
+}
+
+/* ===== Títulos ===== */
+.custom-title {
+    color: var(--gold-color);
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.custom-title-access {
+    color: var(--text-color-dark);
+    font-weight: 500;
+    font-size: 1.1rem; /* Tamanho da fonte do título ajustado para ficar menor */
+    margin-bottom: 0.5rem;
+    display: block;
+    text-align: center;
+}
+
+.custom-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-color-medium);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* ===== Inputs ===== */
+#barber-login-form {
+    width: 100%;
+}
+
+.form-label {
+    text-align: left;
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-color-medium);
+}
+
+.custom-input {
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--text-color-dark) !important;
+    border-radius: var(--border-radius-sm);
+    width: 100%;
+    padding: 0.65rem 1rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.custom-input::placeholder {
+    color: var(--text-color-medium) !important;
+    opacity: 1;
+    text-align: left;
+}
+
+.custom-input:focus {
+    border-color: var(--gold-color) !important;
+    box-shadow: 0 0 0 0.3rem var(--shadow-light) !important;
+    background-color: var(--card-color) !important;
+    outline: none;
+}
+
+/* ===== Botões ===== */
+.custom-btn {
+    background-color: var(--gold-color) !important;
+    border: 1px solid var(--gold-color) !important;
+    color: var(--card-color) !important;
+    font-weight: 600;
+    border-radius: var(--border-radius-sm);
+    width: 100%;
+    padding: 0.65rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-btn:hover {
+    background-color: var(--gold-dark) !important;
+    border-color: var(--gold-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(250, 210, 123, 0.3);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: var(--text-color-dark) !important;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover) !important;
+    border-color: var(--secondary-hover) !important;
+}
+
+/* ===== Animações ===== */
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 20px var(--shadow-light); }
+    50% { transform: scale(1.03); box-shadow: 0 0 35px var(--gold-color); }
+    100% { transform: scale(1); box-shadow: 0 0 20px var(--shadow-light); }
+}
+
+/* ===== Responsividade ===== */
+@media (max-width: 576px) {
+    .custom-card {
+        padding: 0.8rem; /* Ajuste mais agressivo para telas menores */
+    }
+
+    .logo-img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .custom-title {
+        font-size: 1.5rem;
+    }
+
+    .custom-title-access {
+        font-size: 1rem; /* Fonte menor para telas pequenas */
+    }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+    .custom-card {
+        padding: 1rem;
+    }
+}
