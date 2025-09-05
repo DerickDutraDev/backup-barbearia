@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let queueCheckInterval = null;
     let previewInterval = null;
 
-    const POLL_INTERVAL = 5000; // 5s
+    const POLL_INTERVAL = 1500; // 1.5s para quase real-time
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
     // Seleção do barbeiro (UI) com preview da posição
@@ -30,17 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.add('selected');
             selectedBarberInput.value = item.dataset.barber.toLowerCase();
             barbeiroErrorDiv.textContent = '';
-            updateBarberPreview(); // Atualização instantânea
+            updateBarberPreview(); // atualização instantânea
         });
     });
 
-    // Atualiza preview de posição
     async function updateBarberPreview() {
         const barberId = selectedBarberInput.value;
-        if (!barberId) {
-            barberPreviewDiv.textContent = '';
-            return;
-        }
+        if (!barberId) { barberPreviewDiv.textContent = ''; return; }
 
         barberPreviewDiv.style.color = '#D4AF37';
         barberPreviewDiv.textContent = 'Carregando...';
@@ -57,17 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Atualiza preview instantaneamente ao digitar o nome
-    nomeClienteInput.addEventListener('input', () => {
-        updateBarberPreview();
-    });
+    nomeClienteInput.addEventListener('input', updateBarberPreview);
 
-    // Atualiza preview a cada 5s
     function startPreviewInterval() {
-        if (previewInterval) clearInterval(previewInterval);
+        stopPreviewInterval();
         previewInterval = setInterval(updateBarberPreview, POLL_INTERVAL);
     }
-
     function stopPreviewInterval() {
         if (previewInterval) clearInterval(previewInterval);
     }
@@ -84,20 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const nome = nomeClienteInput.value.trim();
         const barbeiroId = selectedBarberInput.value;
-
         let isValid = true;
-        if (!nome) {
-            nomeClienteInput.classList.add('is-invalid');
-            nomeErrorDiv.textContent = 'Por favor, digite seu nome.';
-            isValid = false;
-        } else {
-            nomeClienteInput.classList.remove('is-invalid');
-            nomeErrorDiv.textContent = '';
-        }
-        if (!barbeiroId) {
-            barbeiroErrorDiv.textContent = 'Por favor, selecione um barbeiro.';
-            isValid = false;
-        }
+
+        if (!nome) { nomeClienteInput.classList.add('is-invalid'); nomeErrorDiv.textContent = 'Digite seu nome.'; isValid=false; }
+        else { nomeClienteInput.classList.remove('is-invalid'); nomeErrorDiv.textContent = ''; }
+
+        if (!barbeiroId) { barbeiroErrorDiv.textContent = 'Selecione um barbeiro.'; isValid=false; }
         if (!isValid) return;
 
         joinQueueBtn.disabled = true;
@@ -110,14 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ name: nome, barber: barbeiroId })
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(()=>({error:'Erro'}));
-                throw new Error(errorData.error || `HTTP ${response.status}`);
-            }
+            if (!response.ok) throw new Error((await response.json().catch(()=>({error:'Erro'}))).error || 'Erro');
 
             const data = await response.json();
             currentClientId = data.clientId;
-
             localStorage.setItem('clientId', currentClientId);
             localStorage.setItem('clientName', nome);
             localStorage.setItem('barber', barbeiroId);
@@ -132,16 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             toggleSections(true);
             startQueueCheck(true);
-        } catch (error) {
-            console.error('Erro ao entrar na fila:', error);
-            alert(`Erro ao entrar na fila: ${error.message || 'Erro desconhecido'}`);
-        } finally {
-            joinQueueBtn.disabled = false;
-            joinQueueBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> Entrar na Fila';
-        }
+        } catch (err) { console.error(err); alert('Erro ao entrar na fila'); }
+        finally { joinQueueBtn.disabled = false; joinQueueBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> Entrar na Fila'; }
     });
 
-    // Sair da fila
     btnSairFila.addEventListener('click', async () => {
         if (!currentClientId) return;
         btnSairFila.disabled = true;
@@ -152,21 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clientId: currentClientId })
             });
-            if (response.ok) {
-                stopQueueCheck();
-                clearClientSession();
-                toggleSections(false);
-            } else {
-                const errorData = await response.json().catch(()=>({error:'Erro'}));
-                alert(`Erro: ${errorData.error || 'Erro desconhecido'}`);
-            }
-        } catch (err) {
-            console.error('Erro ao sair da fila:', err);
-            alert('Erro de conexão com o servidor.');
-        } finally {
-            btnSairFila.disabled = false;
-            btnSairFila.innerHTML = '<i class="fas fa-door-open me-2"></i> Sair da Fila';
-        }
+            if (response.ok) { stopQueueCheck(); clearClientSession(); toggleSections(false); }
+            else alert('Erro ao sair da fila');
+        } catch (err) { console.error(err); alert('Erro de conexão'); }
+        finally { btnSairFila.disabled = false; btnSairFila.innerHTML = '<i class="fas fa-door-open me-2"></i> Sair da Fila'; }
     });
 
     function clearClientSession() {
@@ -177,59 +139,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function checkMyPosition() {
-        if (!currentClientId) {
-            stopQueueCheck();
-            return;
-        }
-
+        if (!currentClientId) { stopQueueCheck(); return; }
         try {
             const resp = await fetch(`${API_BASE_URL}/public/position?clientId=${currentClientId}`);
             if (!resp.ok) return;
-
             const data = await resp.json();
-            if (data && data.found) {
+            if (data?.found) {
                 queuePositionDisplay.textContent = data.position;
-                barberNameDisplay.textContent = barbers[data.barber] || (localStorage.getItem('barber') || '');
-                clientNameDisplay.textContent = data.name || localStorage.getItem('clientName') || '';
+                barberNameDisplay.textContent = barbers[data.barber] || (localStorage.getItem('barber')||'');
+                clientNameDisplay.textContent = data.name || localStorage.getItem('clientName')||'';
                 document.getElementById('queue-message').textContent = 'Você já está na fila. Por favor, aguarde seu atendimento.';
                 toggleSections(true);
-            } else {
-                clearClientSession();
-                stopQueueCheck();
-                toggleSections(false);
-            }
-        } catch (err) {
-            console.error('Erro checando posição:', err);
-        }
+            } else { clearClientSession(); stopQueueCheck(); toggleSections(false); }
+        } catch (err) { console.error(err); }
     }
 
-    function startQueueCheck(runImmediate = false) {
-        if (queueCheckInterval) clearInterval(queueCheckInterval);
-        if (runImmediate) checkMyPosition();
-        queueCheckInterval = setInterval(checkMyPosition, POLL_INTERVAL);
-    }
-
-    function stopQueueCheck() {
-        if (queueCheckInterval) {
-            clearInterval(queueCheckInterval);
-            queueCheckInterval = null;
-        }
-    }
+    function startQueueCheck(runImmediate=false) { stopQueueCheck(); if(runImmediate) checkMyPosition(); queueCheckInterval=setInterval(checkMyPosition,POLL_INTERVAL); }
+    function stopQueueCheck() { if(queueCheckInterval){clearInterval(queueCheckInterval); queueCheckInterval=null;} }
 
     function restoreClientSession() {
         const savedClientId = localStorage.getItem('clientId');
         const savedName = localStorage.getItem('clientName');
         const savedBarber = localStorage.getItem('barber');
-
-        if (savedClientId && savedBarber) {
+        if(savedClientId && savedBarber){
             currentClientId = savedClientId;
             clientNameDisplay.textContent = savedName || '';
             barberNameDisplay.textContent = barbers[savedBarber] || savedBarber;
             toggleSections(true);
             startQueueCheck(true);
-        } else {
-            startPreviewInterval(); // inicia preview em tempo real
-        }
+        } else startPreviewInterval();
     }
 
     restoreClientSession();
