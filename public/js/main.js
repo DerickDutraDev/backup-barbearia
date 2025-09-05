@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // posição provável se o cliente entrasse agora
                     position = (data.queue?.length || 0) + 1;
                 }
-                barberPreviewDiv.textContent = `Sua posição será ${position}`;
+                barberPreviewDiv.textContent = `Sua posição será: ${position}`;
             } catch (err) {
                 console.error(err);
                 barberPreviewDiv.textContent = '';
