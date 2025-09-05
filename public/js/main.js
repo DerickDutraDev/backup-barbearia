@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nomeClienteInput = document.getElementById('nome-cliente');
     const nomeErrorDiv = document.getElementById('nome-error');
     const barbeiroErrorDiv = document.getElementById('barber-error');
+    const barberPreviewDiv = document.getElementById('barber-preview');
     const clienteFormSection = document.getElementById('cliente-form-section');
     const queueResponseSection = document.getElementById('queue-response');
     const joinQueueBtn = document.getElementById('join-queue-btn');
@@ -14,45 +15,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientNameDisplay = document.getElementById('client-name-display');
     const barberNameDisplay = document.getElementById('barber-name-display');
     const queuePositionDisplay = document.getElementById('queue-position-display');
-    const barberPreviewDiv = document.getElementById('barber-preview'); // preview posição
 
     let currentClientId = null;
     let queueCheckInterval = null;
-    const POLL_INTERVAL = 5000;     // 5s
+
+    const POLL_INTERVAL = 5000; // 5s
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
-    // Seleção do barbeiro (UI) e preview de posição
+    // Seleção do barbeiro (UI)
     barberItems.forEach(item => {
         item.addEventListener('click', async () => {
             barberItems.forEach(i => i.classList.remove('selected'));
             item.classList.add('selected');
-
-            const barberKey = item.dataset.barber.toLowerCase();
-            selectedBarberInput.value = barberKey;
+            selectedBarberInput.value = item.dataset.barber.toLowerCase();
             barbeiroErrorDiv.textContent = '';
 
-            // Mostrar preview da posição antes de entrar na fila
-            if (!barberPreviewDiv) return;
-            barberPreviewDiv.style.display = 'block';
-            barberPreviewDiv.innerHTML = `<div class="alert alert-info mt-2 animate-fade-in">
-                Carregando posição...
-            </div>`;
-
+            // Preview da posição
+            const barberId = item.dataset.barber.toLowerCase();
+            barberPreviewDiv.textContent = 'Carregando posição...';
             try {
-                const resp = await fetch(`${API_BASE_URL}/public/barber-queue/${barberKey}`);
+                const resp = await fetch(`${API_BASE_URL}/public/barber-queue/${barberId}`);
                 if (!resp.ok) throw new Error('Erro ao buscar fila');
                 const data = await resp.json();
-                const qtd = data.queue?.length || 0;
-
-                barberPreviewDiv.innerHTML = `<div class="alert alert-info mt-2 animate-fade-in">
-                    Atualmente há <b>${qtd}</b> cliente(s) na fila do barbeiro <b>${barbers[barberKey]}</b>.<br>
-                    Se você entrar agora, será o número <b>${qtd + 1}</b>.
-                </div>`;
+                const nome = nomeClienteInput.value.trim();
+                let position = 1;
+                if (nome) {
+                    // posição provável se o cliente entrasse agora
+                    position = (data.queue?.length || 0) + 1;
+                }
+                barberPreviewDiv.textContent = `Se você entrar agora, sua posição será aproximadamente: ${position}`;
             } catch (err) {
-                console.error('Erro preview fila:', err);
-                barberPreviewDiv.innerHTML = `<div class="alert alert-warning mt-2">
-                    Não foi possível verificar a posição agora. Tente novamente.
-                </div>`;
+                console.error(err);
+                barberPreviewDiv.textContent = '';
             }
         });
     });
@@ -152,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Limpa sessão local
     function clearClientSession() {
         currentClientId = null;
         localStorage.removeItem('clientId');
@@ -160,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('barber');
     }
 
-    // Checa posição via endpoint /public/position
     async function checkMyPosition() {
         if (!currentClientId) {
             stopQueueCheck();
@@ -172,12 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!resp.ok) return;
 
             const data = await resp.json();
-            if (data && data.found) {
+            if (data?.found) {
                 queuePositionDisplay.textContent = data.position;
                 barberNameDisplay.textContent = barbers[data.barber] || (localStorage.getItem('barber') || '');
                 clientNameDisplay.textContent = data.name || localStorage.getItem('clientName') || '';
                 document.getElementById('queue-message').textContent = 'Você já está na fila. Por favor, aguarde seu atendimento.';
                 toggleSections(true);
+                return;
             } else {
                 clearClientSession();
                 stopQueueCheck();
