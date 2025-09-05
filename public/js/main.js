@@ -24,6 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const POLL_INTERVAL = 1500;
     const barbers = { junior: 'Junior', yago: 'Yago', reine: 'Reine' };
 
+    // Verifica token na URL (QR Code)
+    const urlParams = new URLSearchParams(window.location.search);
+    tempToken = urlParams.get('token');
+
+    // Se houver token na URL, esconde o form e inicia preview automático
+    if (tempToken) toggleSections(true);
+
     // Seleção do barbeiro
     barberItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -73,14 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
         else stopPreviewInterval();
     }
 
-    // Função para gerar token temporário
+    // Função para gerar token temporário (apenas se não veio na URL)
     async function fetchTempToken() {
+        if (tempToken) return tempToken; // já temos token do QR Code
         try {
-            const resp = await fetch(`${API_BASE_URL}/checkin`);
+            const resp = await fetch(`${API_BASE_URL}/public/checkin`);
             if (!resp.ok) throw new Error('Erro ao obter token temporário');
             const data = await resp.json();
-            const urlParams = new URL(data.joinUrl).searchParams;
-            return urlParams.get('token');
+            const token = new URL(data.joinUrl).searchParams.get('token');
+            tempToken = token;
+            return token;
         } catch (err) {
             console.error(err);
             alert('Erro ao gerar token temporário');
@@ -102,13 +111,13 @@ document.addEventListener('DOMContentLoaded', () => {
         joinQueueBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Entrando...';
 
         try {
-            tempToken = await fetchTempToken();
-            if (!tempToken) throw new Error('Token inválido');
+            const token = await fetchTempToken();
+            if (!token) throw new Error('Token inválido');
 
             const resp = await fetch(`${API_BASE_URL}/public/join-queue`, {
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({name: nome, barber: barberId, token: tempToken})
+                body: JSON.stringify({name: nome, barber: barberId, token})
             });
 
             if (!resp.ok) throw new Error((await resp.json().catch(()=>({error:'Erro'}))).error);
