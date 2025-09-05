@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearTokens() { localStorage.removeItem(accessTokenKey); localStorage.removeItem(refreshTokenKey); }
     function handleLogout() {
         clearTokens();
-        window.location.href = '/'; // <-- aqui vai para a página inicial
+        window.location.href = '/';
     }
 
     async function fetchWithAuth(url, options = {}) {
@@ -114,17 +114,27 @@ document.addEventListener('DOMContentLoaded', () => {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ clientId: client.clientId })
                             });
-                            if (!response.ok) console.error('Erro ao atender cliente:', await response.text());
+                            if (!response.ok) {
+                                console.error('Erro ao atender cliente:', await response.text());
+                                return;
+                            }
+
                             li.remove();
                             if (queueList.querySelectorAll('li.list-group-item:not(.empty-queue)').length === 0) {
                                 queueList.innerHTML = '<li class="list-group-item empty-queue animate-fade-in">Nenhum cliente na fila.</li>';
                             }
-                        } catch (error) { console.error('Erro de conexão:', error); }
+
+                            // 🔥 força atualização imediata
+                            fetchQueuesSafe();
+
+                        } catch (error) {
+                            console.error('Erro de conexão:', error);
+                        }
                     });
                 }
             });
 
-            // ✅ Correção: garante que, se a fila estiver vazia, mostra a mensagem
+            // ✅ Garante mensagem se fila estiver vazia
             if (newQueue.length === 0) {
                 if (!queueList.querySelector('.empty-queue')) {
                     queueList.innerHTML = '<li class="list-group-item empty-queue animate-fade-in">Nenhum cliente na fila.</li>';
